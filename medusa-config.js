@@ -34,36 +34,48 @@ const DATABASE_URL =
 const REDIS_URL = process.env.REDIS_URL || "redis://localhost:6379";
 
 //CLOUDINARY FILE SERVICES begin
-const CLOUDINARY_CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME;
-const CLOUDINARY_API_KEY = process.env.CLOUDINARY_API_KEY;
-const CLOUDINARY_API_SECRET = process.env.CLOUDINARY_API_SECRET;
-const cloudinaryConfigured = CLOUDINARY_CLOUD_NAME && CLOUDINARY_API_KEY && CLOUDINARY_API_SECRET;
-
-const ADMIN_APP_PORT = process.env.PORT || 7001;
-
-const fileServicePlugin = cloudinaryConfigured
-  ? {
-    resolve: `medusa-file-cloudinary`,
-    options: {
-      cloud_name: CLOUDINARY_CLOUD_NAME,
-      api_key: CLOUDINARY_API_KEY,
-      api_secret: CLOUDINARY_API_SECRET,
-      secure: true,
-    },
-  }
-  : {
-    resolve: `@medusajs/file-local`,
-    options: {
-      upload_dir: "uploads",
-    },
-  };
+//const CLOUDINARY_CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME;
+//const CLOUDINARY_API_KEY = process.env.CLOUDINARY_API_KEY;
+//const CLOUDINARY_API_SECRET = process.env.CLOUDINARY_API_SECRET;
+//const cloudinaryConfigured = CLOUDINARY_CLOUD_NAME && CLOUDINARY_API_KEY && CLOUDINARY_API_SECRET;
+//
+//const ADMIN_APP_PORT = process.env.PORT || 7001;
+//
+//const fileServicePlugin = cloudinaryConfigured
+//  ? {
+//    resolve: `medusa-file-cloudinary`,
+//    options: {
+//      cloud_name: CLOUDINARY_CLOUD_NAME,
+//      api_key: CLOUDINARY_API_KEY,
+//      api_secret: CLOUDINARY_API_SECRET,
+//      secure: true,
+//    },
+//  }
+//  : {
+//    resolve: `@medusajs/file-local`,
+//    options: {
+//      upload_dir: "uploads",
+//    },
+//  };
 //CLOUDINARY FILE SERVICES end
 
 
 const plugins = [
   `medusa-fulfillment-manual`,
   `medusa-payment-manual`,
-  fileServicePlugin,
+  {
+    resolve: `medusa-file-s3`,
+    options: {
+        s3_url: process.env.S3_URL,
+        bucket: process.env.S3_BUCKET,
+        region: process.env.S3_REGION,
+        access_key_id: process.env.S3_ACCESS_KEY_ID,
+        secret_access_key: process.env.S3_SECRET_ACCESS_KEY,
+        cache_control: process.env.S3_CACHE_CONTROL,
+
+        prefix: process.env.S3_PREFIX,
+    },
+  },
   {
     resolve: "@medusajs/admin",
     /** @type {import('@medusajs/admin').PluginOptions} */
@@ -71,10 +83,9 @@ const plugins = [
       autoRebuild: true,
       develop: {
         open: process.env.OPEN_BROWSER !== "false",
-        port: ADMIN_APP_PORT,
       },
     },
-  }
+  },
 ];
 
 const modules = {
